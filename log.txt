@@ -1,0 +1,48 @@
+
+ 
+ Running 100
+Lattice(100 vertices, 150 edges)
+Lattice(92 vertices, 138 edges)
+Lattice(112 vertices, 168 edges)
+Lattice(100 vertices, 200 edges)
+Lattice(100 vertices, 300 edges)
+
+ 
+ Running 200
+Lattice(200 vertices, 300 edges)
+Lattice(184 vertices, 276 edges)
+Lattice(230 vertices, 345 edges)
+Lattice(196 vertices, 392 edges)
+Lattice(196 vertices, 588 edges)
+
+ 
+ Running 400
+Lattice(400 vertices, 600 edges)
+Lattice(380 vertices, 570 edges)
+Lattice(472 vertices, 708 edges)
+Lattice(400 vertices, 800 edges)
+Lattice(400 vertices, 1200 edges)
+
+ 
+ Running 600
+Lattice(600 vertices, 900 edges)
+Lattice(568 vertices, 852 edges)
+Lattice(730 vertices, 1095 edges)
+Lattice(576 vertices, 1152 edges)
+Lattice(576 vertices, 1728 edges)
+
+ 
+ Running 1000
+Lattice(1000 vertices, 1500 edges)
+Lattice(952 vertices, 1428 edges)
+Lattice(1178 vertices, 1767 edges)
+Lattice(1024 vertices, 2048 edges)
+Lattice(1024 vertices, 3072 edges)
+
+ 
+ Running 1400
+Lattice(1400 vertices, 2100 edges)
+Lattice(1320 vertices, 1980 edges)
+Lattice(1666 vertices, 2499 edges)
+Lattice(1369 vertices, 2738 edges)
+Lattice(1369 vertices, 4107 edges)

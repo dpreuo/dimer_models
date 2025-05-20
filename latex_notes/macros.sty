@@ -1,0 +1,47 @@
+% math commands:
+\newcommand*{\vertbar}{\rule[-1ex]{0.5pt}{2.5ex}}
+\newcommand*{\horzbar}{\rule[.5ex]{2.5ex}{0.5pt}}
+\newcommand{\dline}[1]{\underline{\underline{#1}}}
+
+\newcommand{\tr}{\ensuremath{\textup{Tr}}}
+\newcommand{\1}{\ensuremath{\mathbbm{1}}}
+\newcommand{\re}{\ensuremath{\textup{Re}}}
+\newcommand{\im}{\ensuremath{\textup{Im}}}
+\newcommand{\ts}{\textsuperscript}
+\renewcommand{\r}{\ensuremath{\textbf{r}}}
+\newcommand{\jon} {J_{\textup{on}}}
+\newcommand{\joff} {J_{\textup{off}}}
+\newcommand{\ketbra}[2]{\ket{#1}\!\bra{#2}}
+\newcommand{\qkit}{\mathcal Q_{\textup{Kit}}}
+\newcommand{\ujk}{u_{jk}}
+\newcommand{\pf}{\textup{pf}\,}
+\newcommand{\pdag}{\phantom{\dag}}
+
+
+\newcommand{\loctr}{\textup{tr}}
+\newcommand{\egs}{E_\textup{g.s.}}
+
+\newcommand{\normord}[1]{{\,}^\ast_\ast  #1 {\,}^\ast_\ast}
+\renewcommand{\ts}{\textsuperscript}
+
+\newcommand{\peru}[1]{{\color[rgb]{0.4,0.,0.8}[\textbf{Peru:} #1]}}
+\newcommand{\justin}[1]{{\color[rgb]{1,0.5,0.}[\textbf{Justin:} #1]}}
+\newcommand{\noteAG}[1]{{\color[rgb]{0.,0.4,0.1}[\textbf{Grushbot Decrees:} #1]}}
+\newcommand{\addAG}[1]{{\color[rgb]{0.,,0.4,0.1}{#1}}}
+
+
+%Define that shaded box you like
+\usepackage[noframe]{showframe}
+\usepackage{framed}
+\renewenvironment{shaded}{%
+    \everypar={{\setbox0=\lastbox}\everypar{}}
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolor}}%
+  \MakeFramed{\advance\hsize-\width \FrameRestore\FrameRestore}}%
+ {\endMakeFramed}
+\definecolor{shadecolor}{gray}{0.9}
+
+
+\renewcommand{\thefootnote}{\roman{footnote}}
+
+% \crefformat{section}{\S#2#1#3}
+% \crefmultiformat{section}{\S\S#2#1#3}{ and~#2#1#3}{, #2#1#3}{, and~#2#1#3}
