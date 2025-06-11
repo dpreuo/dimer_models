@@ -6,3 +6,7 @@
   - run square lattice and check what that gives 
   -  Look at weaire thorpe resolvent trick, how general is it and can it bound the greens functions and thus the dimer probs. 
   - finish analytics and check against numerics
+
+FF jobs list (for final paper): [read Chalker Les Houches for background]
+- Calculate quantum correlators at RK point: monomers, visons. 
+- Establish if we have a photon in the quantum model. We have the q=pi points (bipartite). 

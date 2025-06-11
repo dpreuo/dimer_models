@@ -98,10 +98,11 @@ def expand_plaquette_square_boundary(lattice, plaquette_id):
 def reduce_bipartite(lattice:Lattice, n_steps = None):
 
     if n_steps==None: 
-        r = 1000
+        r = 1000000
     else:
         r = n_steps
     reduced_lattice = copy(lattice)
+    
     for n in range(r):
 
         options = find_expandable_plaquettes(reduced_lattice)

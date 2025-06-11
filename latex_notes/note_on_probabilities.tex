@@ -155,17 +155,17 @@ Now suppose we are working on an amorphous graph which still has the following r
 \end{center}
 where we are represent the Kasteleyn orientation with the arrows, and all loops have an odd number of clockwise arrows. Thus, we can decompose the Kasteleyn `Hamiltonian' into two parts: a term that just lives on each square, $K_{0}$, and a term that connects two squares, $V$, highlighted in green and red respectively,
 \begin{align}
-    K = u K_{0} + v V,
+    K = K_{0} + v V,
 \end{align}
-where $u$ and $v$ parametrise the strength of each bond. Now let us define the resolvent,
+where $v$ parametrises the relative strengths of each bond type. Clearly we are aiming for $v=1$. Now let us define the resolvent,
 \begin{align}
-    R(\lambda) = (K-\lambda)^{-1},
+    R(\lambda) = (\lambda - K)^{-1},
 \end{align}
-which can be decomposed in terms of the `unperturbed' resolvent, $R_0(\lambda) = ( K_0 - \lambda )^{-1},$ using the following series,
+which can be decomposed in terms of the `unperturbed' resolvent, $R_0(\lambda) = ( \lambda - K_0  )^{-1},$ using the following series,
 \begin{align} \label{eqn:resolvent_expansion}
      R = R_0 + R_0VR_0 + R_0VR_0VR_0 + ...
 \end{align}
-Obviously, the resolvent is just a fancy word for the matrix inverse which, as we discussed in the previous section, encodes the local dimer probabilities. So basically what we have here is a nice series expansion for the local dimer probabilities. 
+Obviously, the resolvent is just a fancy word for the matrix inverse which, as we discussed in the previous section, encodes the local dimer probabilities. So basically what we have here is a nice series expansion for the local dimer probabilities, and more! 
 
 Now, let's calculate this expansion. The first thing we want to do is find $R_0$, which is pretty trivial because $H_0$ is just a collection of unconnected squares, where each square has three clockwise arrows and one counterclockwise one\footnote{Or the other way round, but these two configurations are gauge equivalent, just swap all arrows, which is always a gauge transform when we're bipartite.}. Thus, the Hamiltonian $H_0$ is a bunch copies of the following matrix,
 \begin{align}
@@ -180,32 +180,44 @@ This is a rather remarkable operator because it satisfies the property
 \begin{align}
     h^2  = -2 \1,
 \end{align}
-i.e. it is almost idempotent, $h^{-1} = -h/2$. Note that only the square case has this property, the same cannot be said of the hexagonal lattice where we can define an $h_6$ matrix\footnote{More on that later, $h_6$ and $h_8$ still have some lovely properties.}. To find the whole resolvent, let's make an ansatz for the inverse of $\lambda - h$, as the following expression parametrised by $a$ and $b$,
+i.e. it is almost idempotent, $h^{-1} = -h/2$. Note that only the square case has this property, the same cannot be said of the hexagonal lattice where we can define an $h_6$ matrix\footnote{More on that later, $h_6$ and $h_8$ still have some lovely properties.}. To find the whole resolvent, let's make an ansatz for the inverse of $\lambda - h$, as the following expression parameterised by $a$ and $b$,
 \begin{align}
     \left (
-         h- \lambda
+        \lambda - h
     \right )^{-1} = 
-        ah + b,
+        a + bh,
 \end{align}
 which is satisfied by
 \begin{align}
-    a = \frac{-1}{2 + \lambda^2}, \\
-    b = \frac{-\lambda}{2 + \lambda^2}.
+    a = \frac{\lambda}{\lambda^2+2}, \\
+    b = \frac{1}{\lambda^2+2}.
 \end{align}
 Thus, the resolvent is given by 
 \begin{align}
-    R_0(\lambda) = \frac{-1}{2+\lambda^2}\left ( 
-        h+\lambda 
-    \right ).
+    R_0(\lambda) = \frac{\lambda + h }{\lambda^2 + 2}.
 \end{align}
-That was easy! And it's all rather encouraging, since the factor of $1/(2+\lambda^2)$ is going to be rather useful in making sure our infinite sum doesn't blow up!
+That was easy! And it's all rather encouraging, since the factor of $1/(\lambda^2 + 2)$ is going to be useful in making sure our infinite sum doesn't blow up!
+
+\begin{shaded}
+\textit{Hilbert's Identity}---%
+One useful identity for calculating stuff like this is the following,
+\begin{align}
+    R(\lambda) - R(\xi) = (\lambda - \xi)R(\lambda) R(\xi), 
+\end{align}
+which we can massage to give the following expression
+\begin{align}
+    R(\lambda)  = R(0) [\1  -\lambda R(0) ]^{-1}
+\end{align}
+
+
+\end{shaded}
 
 \subsection{The Resolvent at $\lambda = 0$}
 
-Let's focus on the resolvent at $\lambda = 0$, which is the simplest case, since $R_0(0) = -h/2$.
+Let's focus on the resolvent at $\lambda = 0$, which is the simplest case, since $R_0(0) = h/2$.
 Now that we have an exact expression for $R_0$, we can start to evaluate the full-system resolvent, $R$, using \cref{eqn:resolvent_expansion}. Specifically, we are interested in calculating the matrix element of $R$ on the bond $(ij)$, which can be written as
 \begin{align}
-    R_{ij} = -\frac 12 h_{ij} + \frac 14 h_{ i\mu} V_{\mu \nu}h_{ \nu j} -\frac 18 h_{ i\mu} V_{\mu \nu} h_{ \nu\alpha} V_{\alpha \beta}h_{ \beta j} + ...
+    R_{ij} = \frac 12 h_{ij} + \frac 14 h_{ i\mu} V_{\mu \nu}h_{ \nu j} +\frac 18 h_{ i\mu} V_{\mu \nu} h_{ \nu\alpha} V_{\alpha \beta}h_{ \beta j} + ...
 \end{align}
 This is useful because as we have seen, the matrix element of $R(\lambda = 0)$ is precisely the probability of a given site hosting a dimer\footnote{Obviously in periodic boundaries this is complicated slightly, but let's not worry about that for now.}. At each order in the series, the terms can be interpreted as a weighted sum over all paths from $i$ to $j$. 
 
@@ -213,6 +225,53 @@ Naively this looks like it hasn't really helped, path counting is on a disordere
 
 \subsubsection{Counting All Paths}
 \subsubsection{The Sign of a Path}
+
+\section{Lieb's Theorem}
+
+Remarkably, this calculation appears to provide a clue towards a proof of Lieb's theorem on our special square-full bipartite lattice---and even might lead us to a general proof! To see why, let us start by stating what we aim to prove:
+\begin{theorem}
+    Consider a signed adjacency matrix $M$, defined on a bipartite graph $\Lambda$ with $|\Lambda|$ = 2n, as 
+    \begin{align}
+        M_{jk} = \begin{cases}
+            \pm 1 & \text{if}\; \braket{jk}, \\
+            0 & \text{otherwise},
+        \end{cases}
+    \end{align}
+    where $M_{jk} = - M_{kj}$ and we have free choice over the which direction is positive for each edge. Since $M$ is skew-symmetric, the eigenvalues of $M$ come in complex pairs $\pm  i \varepsilon_{j}$. We define the ground state energy as 
+    \begin{align}
+        \egs = \sum_{j}^n \varepsilon_j.
+    \end{align}
+    Lieb's theorem states that the ground state energy is extremised when the signs of $M$ are chosen such that $M$ is a Kasteleyn orientation. 
+\end{theorem}
+
+To work towards a proof, let us write the ground state energy as a contour integral in the resolvent,
+\begin{align}
+    \egs(M) =\frac{1}{2\pi}\int_{\mathcal C}d\lambda \tr [M R(\lambda)],
+\end{align}
+Where the path $\mathcal C$ encircles only the upper or lower half plan in the Argand diagram. To see why this works, write the expression in the eigenbasis of $M$, $\{\ket {\pm \varepsilon_j}\}$, where the eigenvalues are $\pm i\varepsilon_j$
+\begin{align}
+    \egs(M) =\frac{1}{2\pi}\int_{\mathcal C}\sum_{j} \left ( 
+        \frac{i \varepsilon_j}{\lambda - i \varepsilon_j}
+         + 
+        \frac{-i \varepsilon_j}{\lambda + i \varepsilon_j}
+        \right ).
+\end{align}
+By encircling only the negative imaginary poles in this expression, we use Cauchy's residue theorem to show that the calculation evaluates the sum of negative eigenvalues,
+\begin{align}
+    \frac{1}{2\pi}\int_{\mathcal C}d\lambda \tr [M R(\lambda)] = \sum_{j} \varepsilon_j.
+\end{align}
+
+Now, let us use the expansion we derived above for the resolvent, again expanding the matrix $M$ into two parts, $M_0$ and $V$, which live on- and between-squares respectively.
+\begin{align}
+    \egs(M) = \frac 1{2\pi} \int_C d\lambda \tr\left [
+        (M_0 + V)
+        (R_0 + R_0 V R_0 + ...)\right ]
+\end{align}
+Next, we make the first assumption (which we shall work to prove is the right assumption later). That is, assume that all squares already have flux $-1$, which means that $M_0$ is already described by the $h$ that we showed above. Then we have the following identity,
+\begin{align}
+    h R_0(\lambda) = \lambda\frac{ h - 2/\lambda}{\lambda^2 + 2}
+\end{align} 
+
 
 
 
