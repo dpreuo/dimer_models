@@ -230,23 +230,23 @@ Naively this looks like it hasn't really helped, path counting is on a disordere
 
 Remarkably, this calculation appears to provide a clue towards a proof of Lieb's theorem on our special square-full bipartite lattice---and even might lead us to a general proof! To see why, let us start by stating what we aim to prove:
 \begin{theorem}
-    Consider a signed adjacency matrix $M$, defined on a bipartite graph $\Lambda$ with $|\Lambda|$ = 2n, as 
+    Consider a signed adjacency matrix $A$, defined on a bipartite graph $\Lambda$ with $|\Lambda|$ = 2n, as 
     \begin{align}
-        M_{jk} = \begin{cases}
+        A_{jk} = \begin{cases}
             \pm 1 & \text{if}\; \braket{jk}, \\
             0 & \text{otherwise},
         \end{cases}
     \end{align}
-    where $M_{jk} = - M_{kj}$ and we have free choice over the which direction is positive for each edge. Since $M$ is skew-symmetric, the eigenvalues of $M$ come in complex pairs $\pm  i \varepsilon_{j}$. We define the ground state energy as 
+    where $A_{jk} = - A_{kj}$, and we have free choice over the which direction is positive for each edge. Since $A$ is skew-symmetric, the eigenvalues of $iA$ come in pairs $\pm \varepsilon_{j}$. We define the ground state energy as 
     \begin{align}
         \egs = \sum_{j}^n \varepsilon_j.
     \end{align}
-    Lieb's theorem states that the ground state energy is extremised when the signs of $M$ are chosen such that $M$ is a Kasteleyn orientation. 
+    Lieb's theorem states that the ground state energy is extremised when the signs of $A$ are chosen such that $A$ is a Kasteleyn orientation, $K$. 
 \end{theorem}
 
-To work towards a proof, let us write the ground state energy as a contour integral in the resolvent,
+To work towards a proof, let us write the ground state energy as a contour integral in the resolvent of $iA$,
 \begin{align}
-    \egs(M) =\frac{1}{2\pi}\int_{\mathcal C}d\lambda \tr [M R(\lambda)],
+    \egs(iA) =\frac{1}{2\pi}\int_{\mathcal C}d\lambda \tr [M R(\lambda)],
 \end{align}
 Where the path $\mathcal C$ encircles only the upper or lower half plan in the Argand diagram. To see why this works, write the expression in the eigenbasis of $M$, $\{\ket {\pm \varepsilon_j}\}$, where the eigenvalues are $\pm i\varepsilon_j$
 \begin{align}
@@ -269,7 +269,7 @@ Now, let us use the expansion we derived above for the resolvent, again expandin
 \end{align}
 Next, we make the first assumption (which we shall work to prove is the right assumption later). That is, assume that all squares already have flux $-1$, which means that $M_0$ is already described by the $h$ that we showed above. Then we have the following identity,
 \begin{align}
-    h R_0(\lambda) = \lambda\frac{ h - 2/\lambda}{\lambda^2 + 2}
+    h R_0(\lambda) = \frac{ h\lambda - 2}{\lambda^2 + 2}
 \end{align} 
 
 

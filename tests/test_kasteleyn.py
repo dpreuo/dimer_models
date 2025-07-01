@@ -6,7 +6,9 @@ from dimer_models.lattice_generation import (
     bipartite_squarefull,
     reduce_bipartite,
 )
+from dimer_models.dimerisation import dimer_height
 from koala.flux_finder import ujk_from_fluxes
+from koala.graph_utils import dimerise
 import pickle
 import numpy as np
 
@@ -43,12 +45,31 @@ def test_kasteleyn_number():
                 break
 
 
+def test_dimer_heights():
+    with open("tests/test_lattices", "rb") as f:
+        while True:
+            try:
+                lattices = pickle.load(f)
+                for lattice in lattices:
+
+                    plaq_lengths = np.array([p.n_sides for p in lattice.plaquettes])
+                    regular = np.all(lattice.vertices.coordination_numbers == lattice.vertices.coordination_numbers[0])
+                    if np.sum(plaq_lengths%2) == 0 and regular:
+                        dimer = dimerise(lattice)
+                        dimer_height(lattice,dimer)
+
+            except EOFError:
+                break
+
+
+
 def create_lattices_for_testing():
     with open("tests/test_lattices", "wb") as f:
         n = 0
         while n < 10:
             try:
-
+                
+                # bipartite lattice, reduced squares, open boundaries
                 l3 = reduce_bipartite(
                     bipartite_squarefull(80, ensure_true_bipartite=False)
                 )
@@ -56,8 +77,13 @@ def create_lattices_for_testing():
                 assert l3.n_vertices % 2 == 0
                 ujk_reduced = ujk_from_fluxes(l3, [-1] * l3.n_plaquettes)
 
+                # general lattice non bipartite
                 l0 = generate_lattice(uniform(20))
+
+                # full of squares
                 l1 = bipartite_squarefull(35, ensure_true_bipartite=True)
+
+                # bipartite lattice, reduced squares, periodic boundaries
                 l2 = reduce_bipartite(
                     bipartite_squarefull(60, ensure_true_bipartite=True)
                 )
@@ -72,3 +98,4 @@ def create_lattices_for_testing():
 
 if __name__ == "__main__":
     create_lattices_for_testing()
+
