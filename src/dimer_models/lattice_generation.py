@@ -6,8 +6,89 @@ import numpy as np
 from koala.lattice import Lattice, INVALID
 from koala.graph_utils import remove_vertices
 from copy import copy
+from collections.abc import Iterable
 
-def bipartite_squarefull(n_sites, ensure_true_bipartite = True):
+
+def expand_edges(lattice: Lattice, edge_indices: np.ndarray) -> Lattice:
+    """Expands a set of n edges into plaquettes, removing the two vertices that touch the given edge
+
+    Args:
+        lattice (Lattice): The lattice
+        edge_indices (np.ndarray): array of all edges to be removed
+
+    Raises:
+        Exception: List of edges to remove is intersecting
+
+    Returns:
+        Lattice: The new lattice with edges removed
+    """
+
+    if not isinstance(edge_indices, Iterable):
+        edge_indices = np.array([edge_indices])
+
+    if len(edge_indices) == 0:
+        return lattice
+
+    positions = lattice.vertices.positions
+    edges = lattice.edges.indices
+    crossing = lattice.edges.crossing
+
+    adjacent_edges = lattice.edges.adjacent_edges
+
+    vertices_for_removal = []
+    edges_to_add = []
+    crossing_to_add = []
+    for ed in edge_indices:
+
+        # check the vertices have not already been marked for removal
+        if len(np.intersect1d(vertices_for_removal, lattice.edges.indices[ed])):
+            raise Exception("List of edges to remove is intersecting")
+
+        # add to the list
+        vertices_for_removal.append(lattice.edges.indices[ed])
+
+        # now we add each new edge
+        adjacent_plaqs = lattice.edges.adjacent_plaquettes[ed]
+        for p in adjacent_plaqs:
+
+            plaq = lattice.plaquettes[p]
+            chosen_edge = np.where(plaq.edges == ed)[0][0]
+
+            edges_in_triad = np.roll(plaq.edges, -chosen_edge + 1)[:3]
+            directions = np.roll(plaq.directions, -chosen_edge + 1)[:3]
+
+            vertices_in_triad = lattice.edges.indices[edges_in_triad]
+            vertices_in_triad[np.where(directions == -1)] = vertices_in_triad[
+                np.where(directions == -1)
+            ][:, ::-1]
+
+            new_edge = np.array([vertices_in_triad[0, 0], vertices_in_triad[-1, -1]])
+            new_crossing = np.sum(
+                directions[:, None] * lattice.edges.crossing[edges_in_triad], axis=0
+            )
+
+            if len(np.intersect1d(vertices_for_removal, new_edge)):
+                raise Exception("List of edges to remove is intersecting")
+                pass
+
+            edges_to_add.append(new_edge)
+            crossing_to_add.append(new_crossing)
+
+    # make the new lattice with all added edges
+    positions = lattice.vertices.positions
+    final_edges = np.concatenate([lattice.edges.indices, edges_to_add])
+    final_crossing = np.concatenate([lattice.edges.crossing, crossing_to_add])
+
+    # remove the bad vertices
+    vertices_for_removal = np.concatenate(vertices_for_removal)
+    x = gu._remove_vertices_backend(
+        positions, final_edges, final_crossing, vertices_for_removal
+    )
+
+    return Lattice(*x)
+
+
+def bipartite_squarefull(n_sites, ensure_true_bipartite = True, return_pre_expanded = False):
 
     check = True
     while check:
@@ -25,6 +106,8 @@ def bipartite_squarefull(n_sites, ensure_true_bipartite = True):
         if x_loop_len%2 + y_loop_len%2 == 0:
             check = False
 
+    if return_pre_expanded:
+        return out, lattice
     return out
 
 def find_expandable_plaquettes(lattice: Lattice):

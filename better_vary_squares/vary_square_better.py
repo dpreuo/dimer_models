@@ -5,8 +5,7 @@ from koala.voronization import generate_lattice
 from koala.lattice import INVALID
 from koala import example_graphs as eg
 from dimer_models.lattice_generation import (
-    bipartite_squarefull,
-    reduce_bipartite,
+    expand_edges
 )
 from tqdm import tqdm
 from dimer_models.kasteleyn import find_kasteleyn_number, find_local_dimer_probability
@@ -17,12 +16,24 @@ import pickle
 import time
 import datetime
 
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import koala.plotting as pl
 
 def _find_correlation(args):
 
     lattice, vertex_1, vertex_2, distance_between = args
 
     to_remove = [vertex_1, vertex_2]
+
+    # check distance is correct
+    d = gu.distance_matrix(lattice)
+
+    assert d[vertex_1, vertex_2] == distance_between, (
+        f"Distance between {vertex_1} and {vertex_2} is {d[vertex_1, vertex_2]}, "
+        f"not {distance_between}"
+    )
+
     monomer_lattice = gu.remove_vertices(lattice, to_remove)
 
     if INVALID in lattice.vertices.adjacent_plaquettes[to_remove]:
@@ -30,28 +41,28 @@ def _find_correlation(args):
 
     n_dimers = find_kasteleyn_number(monomer_lattice, True)
 
-    return (distance_between, n_dimers)
+    return  distance_between, n_dimers, to_remove
 
 
-def main(ns, lattice_index, open_bcs, check_n_monomers, n_cores):
+def main(n_sites, lattice_index, check_n_monomers, n_cores, n_data_points):
 
-    print(f"\n Running {ns}")
-    bc = 'open' if open_bcs else 'closed'
-    relevant_directory = f"monomer_results/lattices/{bc}/{ns:05}"
+    relevant_directory = f"monomer_results/reducible/{n_sites:05}"
+    with open(f"{relevant_directory}.pkl", "rb") as f:
+        try:
+            [pickle.load(f) for _ in range(lattice_index-1)]
+            lattice_original, dimer = pickle.load(f)
+        except EOFError:
+            raise Exception('not enough lattices xoxo')
 
-    with open(f"{relevant_directory}/{lattice_index}.pkl", "rb") as f:
-        lat_square = pickle.load(f)
-        lat_reduced = pickle.load(f)
-
-
-    lattices = [lat_square, lat_reduced]
-    bipartite = [True, True]
-
-    print(lattices)
 
     results = []
-    for b, lattice in zip(bipartite, lattices):
+    for n in range(n_data_points):
+        f =  n / n_data_points
+        f = f*(2-f)
+        subset = np.random.choice(dimer, np.round(f*len(dimer)).astype(int) , replace=False)
+        lattice = expand_edges(lattice_original, subset)
 
+        # find the sites to remove at random for monomer calculation
         distances = gu.distance_matrix(lattice)
         starting_point, ending_point = np.meshgrid(
             np.arange(lattice.n_vertices), np.arange(lattice.n_vertices)
@@ -60,11 +71,7 @@ def main(ns, lattice_index, open_bcs, check_n_monomers, n_cores):
         distances = distances.flatten()[p]
         starting_point = starting_point.flatten()[p]
         ending_point = ending_point.flatten()[p]
-
-        if b:
-            useful_pairs = np.where((distances % 2 == 1) * (distances > 2))
-        else:
-            useful_sites = np.where(distances > 2)
+        useful_pairs = np.where((distances % 2 == 1) * (distances > 2))
 
         distances = distances[useful_pairs]
         starting_point = starting_point[useful_pairs]
@@ -79,6 +86,7 @@ def main(ns, lattice_index, open_bcs, check_n_monomers, n_cores):
             distances[:limit],
         )
 
+        print(lattice)
         with Pool(n_cores) as pool:
 
             out = list(
@@ -87,40 +95,45 @@ def main(ns, lattice_index, open_bcs, check_n_monomers, n_cores):
                     total=limit,
                 )
             )
-        
-
         dimer_probs = find_local_dimer_probability(lattice)
         partition_function = find_kasteleyn_number(lattice, True)
 
         dists = np.array([x[0] for x in out if x is not None])
         mags = np.array([x[1][0] for x in out if x is not None])
         pows = np.array([x[1][1] for x in out if x is not None])
+        pairs = np.array([x[2] for x in out if x is not None])
 
         results.append(
             {
                 "lattice": lattice,
                 "partition_func": partition_function,
                 "distances": dists,
+                "pairs": pairs,
                 "mags": mags,
                 "powers": pows,
                 "dimer_probs": dimer_probs
             }
         )
 
-    # with open(f"monomer_results/res_w_inv/n{ns:05}_bc{open_bcs}.pkl", "wb") as f:
-    #     pickle.dump(results, f)
 
+
+    with open(f"monomer_results/reducible/res/{n_sites:05}_{lattice_index}_res.pkl", "wb") as f:
+        pickle.dump(results, f)
+
+    
 
 if __name__ == "__main__":
+ 
+    # n_sites = 400
+    lattice_index = 2
+    n_cores = 10
+    n_data_points = 15
+    pairs_to_check = 3000
 
-    open_bcs = False
-    lattice_index = 3
+    for n_sites in [2000]:
+        print(f"Starting calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}")
+        main(n_sites, lattice_index, pairs_to_check, n_cores,n_data_points)
+        print(f"Finished calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}")
 
-    # for ns in [100, 200]:
-    # for ns in [100, 200, 400, 600, 1000, 1400, 2000, 4000, 6000]:
-    for ns in [ 4000, 6000]:
-    # for ns in [2000, 4000, 6000]:
-        t1 = time.time()
-        main(ns, lattice_index, open_bcs, 3000, 7)
-        t = time.time() - t1
-        print(f"Run:{ns}, time:{str(datetime.timedelta(seconds=t))}")
+
+
