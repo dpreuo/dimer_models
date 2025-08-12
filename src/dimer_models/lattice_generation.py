@@ -201,3 +201,57 @@ def reduce_bipartite(lattice:Lattice, n_steps = None):
         reduced_lattice = expand_plaquette_square_boundary(reduced_lattice, first_choice)
 
     return reduced_lattice
+
+def expand_edges_to_squares(lattice:Lattice, chosen_edges: np.ndarray)->Lattice:
+    """Expand a select number of edges into squares
+
+    Args:
+        lattice (Lattice): The starting lattice
+        chosen_edges (np.ndarray): The edges to expand
+
+    Returns:
+        Lattice: The final lattice
+    """
+
+    ind_touched = lattice.edges.indices[chosen_edges].flatten()
+    assert len(set(ind_touched)) == len(ind_touched), "Edges to expand touch the same vertex"
+
+    # make vertices into triangles
+    l2 = gu.vertices_to_polygon(lattice, lattice.edges.indices[chosen_edges].flatten())
+
+    # next add the right edges to have the squares present
+    edges_to_add = copy(l2.edges.indices)
+    crossing_to_add = copy(l2.edges.crossing)
+    vertices_to_remove = []
+
+    for chosen_edge in chosen_edges:
+        adj_plaqs = l2.edges.adjacent_plaquettes[chosen_edge]
+        vertices_to_remove.append(l2.edges.indices[chosen_edge])
+
+        for p_index in adj_plaqs:
+            plaquette = l2.plaquettes[p_index]
+
+            e_in_loop = np.where(plaquette.edges == chosen_edge)[0]
+            i_in_loop = np.array(
+                [e_in_loop - 1, e_in_loop, e_in_loop + 1]
+            ).flatten() % len(plaquette.edges)
+
+            signs_in_run = plaquette.directions[i_in_loop]
+            edges_in_run = plaquette.edges[i_in_loop]
+
+            vertices_in_run = l2.edges.indices[edges_in_run]
+            crossing_in_run = l2.edges.crossing[edges_in_run] * signs_in_run[:, None]
+
+            cross = np.sum(crossing_in_run, axis=0)
+            i = (1 - signs_in_run) // 2
+            edge = np.array([vertices_in_run[0, i[0]], vertices_in_run[-1, 1 - i[0]]])
+
+            edges_to_add = np.vstack([edges_to_add, edge])
+            crossing_to_add = np.vstack([crossing_to_add, cross])
+
+            # crossing_to_add.append(cross)
+
+    l3 = Lattice(l2.vertices.positions, edges_to_add, crossing_to_add)
+    l4 = gu.remove_vertices(l3, np.array(vertices_to_remove).flatten())
+
+    return l4
