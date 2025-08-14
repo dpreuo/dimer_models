@@ -1,10 +1,10 @@
+import ctypes
 from koala.lattice import Lattice
+from koala.flux_finder import fluxes_from_ujk, ujk_from_fluxes
 import numpy as np
 import numpy.typing as npt
-from koala.flux_finder import fluxes_from_ujk, ujk_from_fluxes
 from pfapack.ctypes import pfaffian
 import pfapack.ctypes as cpf
-import ctypes
 from scipy import linalg as la
 
 
@@ -37,7 +37,7 @@ def _fast_pfaffian(K):
     return (result_array[0], result_array[1])
 
 
-def find_kasteleyn_number(lattice: Lattice, s_log=False):
+def find_kasteleyn_number(lattice: Lattice, s_log=False, return_individual_sectors=False):
     """Given a lattice, find the total number of dimerisations using Kasteleyn's method.
 
     Args:
@@ -105,7 +105,7 @@ def find_kasteleyn_number(lattice: Lattice, s_log=False):
         else:
             m = np.ones([4, 4]) - 2 * np.eye(4)
             options = np.abs(np.sum(m * np.array(n_vals), axis=1)) // 2
-
+        
             return int(np.max(options))
 
     else:

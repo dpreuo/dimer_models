@@ -112,7 +112,7 @@ Now we consult Kasteleyn's theorem and realise that this is a rather remarkable 
 \subsection{Working on the Torus}
 
 So far, everything we have done has been in open boundary conditions. Things become a little more complex when one works on the torus. This is because Kasteleyn's theorem looks rather different on the torus due to the presence of topologically non-trivial loops, which wind the torus in the $x$ and $y$ direction. Thus, we must define four Kasteleyn matrices, indexed by $K^{ab}$, with $a,b \in \{0,1\}$. Each of these indexes denotes whether the boundary conditions are periodic or anti-periodic in that respective direction. Equivalently, they denote the flux threaded through these two non-contractible loops. Again, we shall only state Kasteleyn's theorem for this case, which says that
-\begin{align}
+\begin{align} \label{eqn:pbc_n_dimerisations}
     N = \frac 12 \left |  \pf K^{00} -\pf K^{01}-\pf K^{10}-\pf K^{11} \right |.
 \end{align}
 This time, let's start by writing down the formula for the probability of a single edge hosting a dimer,
@@ -147,6 +147,71 @@ Now, we insert \cref{eqn:kij_in_k}, leading to the following expression for the 
     \right |,
 \end{align}
 This is a bit more complex than the expression for the regular probability but still totally manageable.
+
+
+\section{Confinement and Periodic Boundaries}
+
+Now let us consider a periodic lattice with some kind of unit cell that is repeated $ (N_x, N_y)$ times in the $x$- and $y$-directions respectively. We can then take the Kasteleyn matrix and write it in the following form,
+\begin{align}
+    K = \sum_{\bm \Delta , \textbf r} \ketbra{\textbf r +\bm \Delta}{\textbf r} \otimes K_{\Delta}  + h.c.
+\end{align}
+and Bloch diagonalise it in the following form 
+\begin{align}
+    K = \sum_{\textbf q}\ketbra{\textbf q}{\textbf q} \otimes \left (
+        K_{\bm\Delta} 
+        e^{i\textbf q \cdot \bm \Delta} 
+        - 
+        K_{\bm \Delta}^T 
+        e^{-i\textbf q \cdot \bm \Delta} 
+        \right )
+\end{align}
+where the momentum is constrained to values of 
+\begin{align}
+    \textbf q = 2\pi \left ( \frac{n_x}{N_x}, \frac{n_y}{N_y} \right ).
+\end{align}
+Fine, very boring. But now let's consider the fact that on the torus we have to calculate not one but \textit{four} Kasteleyn matrices, where each differ by a change in the boundary conditions! Each sector of $K^{ab}$ has either periodic or anti-periodic boundaries in the $x$- and $y$-directions, which we can accommodate for relatively easily since such a boundary condition only has the effect of modifying which values of $\textbf q$ fit the system. For $K^{ab}$, with $a,b\in \{0,1\}$ we modify the momentum values to,
+\begin{align}
+    n_x \rightarrow n_x + \frac a2, \qquad
+    n_y  \rightarrow n_y + \frac b2.
+\end{align}
+
+Next, let us revisit the formula for the overall number of dimersations, \cref{eqn:pbc_n_dimerisations}. The reason for the form of this guy is because each Pfaffian of an individual $K^{ab}$ counts the dimerisations in different sectors with different signs, specifically according to the following table
+\begin{center}
+\begin{tabular}{ c|c c c c }
+    & $K^{00}$& $K^{10}$& $K^{01}$& $K^{11}$\\
+    \hline
+    (e,e) & + & +& +& + \\ 
+    (e,o) & - & -& +& + \\  
+    (o,e) & - & +& -& + \\
+    (o,o) & - & +& +& -    
+\end{tabular}
+\end{center}
+Clearly, from this expression, we can see the validity of the formula above, \cref{eqn:pbc_n_dimerisations}. However, we can also use it to determine the number of dimerisations in each sector:
+\begin{align}
+    \begin{pmatrix}
+        N^{ee} \\
+        N^{eo} \\
+        N^{oe} \\
+        N^{oo} 
+    \end{pmatrix} = \frac 14\begin{pmatrix}
+        1&1&1&1 \\ 
+        -1&-1&1&1 \\ 
+        -1&1&-1&1 \\ 
+        -1&1&1&-1 
+    \end{pmatrix}\begin{pmatrix}
+        \pf K^{00}\\
+        \pf K^{10}\\
+        \pf K^{01}\\
+        \pf K^{11}
+    \end{pmatrix}
+\end{align}
+
+Now, we want to characterise the resistance the system has to a system-crossing dimer flip, which would move us from one sub-sector to another. This can be characterised by calculating the following sums:
+\begin{align}
+    N_{ex} =N^{ee} + N^{eo} =\frac 12 \left (\pf K^{01} + \pf K^{11}\right ) \\ 
+    N_{ox} =N^{oe} + N^{oo} =\frac 12 \left ( - \pf K^{00} + \pf K^{10}\right ) 
+\end{align}
+
 
 \section{Some Neat Tricks on a Semi-regular Lattice}
 Now suppose we are working on an amorphous graph which still has the following regular structure, something like this:

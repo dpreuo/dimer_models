@@ -202,7 +202,7 @@ def reduce_bipartite(lattice:Lattice, n_steps = None):
 
     return reduced_lattice
 
-def expand_edges_to_squares(lattice:Lattice, chosen_edges: np.ndarray)->Lattice:
+def expand_edges_to_squares(lattice: Lattice, chosen_edges: np.ndarray) -> Lattice:
     """Expand a select number of edges into squares
 
     Args:
@@ -214,10 +214,16 @@ def expand_edges_to_squares(lattice:Lattice, chosen_edges: np.ndarray)->Lattice:
     """
 
     ind_touched = lattice.edges.indices[chosen_edges].flatten()
-    assert len(set(ind_touched)) == len(ind_touched), "Edges to expand touch the same vertex"
+    assert len(set(ind_touched)) == len(
+        ind_touched
+    ), "Edges to expand touch the same vertex"
+
+    if len(chosen_edges) == 0:
+        return lattice
 
     # make vertices into triangles
     l2 = gu.vertices_to_polygon(lattice, lattice.edges.indices[chosen_edges].flatten())
+
 
     # next add the right edges to have the squares present
     edges_to_add = copy(l2.edges.indices)
@@ -228,10 +234,13 @@ def expand_edges_to_squares(lattice:Lattice, chosen_edges: np.ndarray)->Lattice:
         adj_plaqs = l2.edges.adjacent_plaquettes[chosen_edge]
         vertices_to_remove.append(l2.edges.indices[chosen_edge])
 
-        for p_index in adj_plaqs:
+        for j,p_index in enumerate(adj_plaqs):
             plaquette = l2.plaquettes[p_index]
 
             e_in_loop = np.where(plaquette.edges == chosen_edge)[0]
+            if len(e_in_loop) >1:
+                e_in_loop = e_in_loop[j]
+
             i_in_loop = np.array(
                 [e_in_loop - 1, e_in_loop, e_in_loop + 1]
             ).flatten() % len(plaquette.edges)
