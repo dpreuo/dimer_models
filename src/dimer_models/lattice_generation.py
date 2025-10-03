@@ -69,7 +69,6 @@ def expand_edges(lattice: Lattice, edge_indices: np.ndarray) -> Lattice:
 
             if len(np.intersect1d(vertices_for_removal, new_edge)):
                 raise Exception("List of edges to remove is intersecting")
-                pass
 
             edges_to_add.append(new_edge)
             crossing_to_add.append(new_crossing)

@@ -8,15 +8,24 @@ import pfapack.ctypes as cpf
 from scipy import linalg as la
 
 
-def kasteleyn_matrix(lattice: Lattice, ujk: npt.NDArray):
+def kasteleyn_matrix(lattice: Lattice, ujk: npt.NDArray, k=None):
 
-    ham = np.zeros((lattice.n_vertices, lattice.n_vertices))
-    hoppings = ujk
+    dtype = int if k is None else complex
+    ham = np.zeros((lattice.n_vertices, lattice.n_vertices), dtype=dtype)
 
-    ham[lattice.edges.indices[:, 1], lattice.edges.indices[:, 0]] = hoppings
-    ham[lattice.edges.indices[:, 0], lattice.edges.indices[:, 1]] = -1 * hoppings
+    hoppings = ujk.astype(int)
+
+    if k is not None:
+        phases = np.sum(lattice.edges.crossing * k, axis=-1)
+        phases = np.exp(1j * phases)
+        hoppings = hoppings * phases
+
+    for j, h in enumerate(hoppings):
+        ham[lattice.edges.indices[j, 1], lattice.edges.indices[j, 0]] += h
+        ham[lattice.edges.indices[j, 0], lattice.edges.indices[j, 1]] -= h.conj()
 
     return ham
+
 
 def _pull_edge_entries(lattice, matrix):
 
