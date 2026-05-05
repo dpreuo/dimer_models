@@ -4,9 +4,7 @@ from koala import plotting as pl
 from koala.voronization import generate_lattice
 from koala.lattice import INVALID
 from koala import example_graphs as eg
-from dimer_models.lattice_generation import (
-    expand_edges
-)
+from dimer_models.lattice_generation import expand_edges
 from tqdm import tqdm
 from dimer_models.kasteleyn import find_kasteleyn_number, find_local_dimer_probability
 import numpy as np
@@ -19,6 +17,7 @@ import datetime
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import koala.plotting as pl
+
 
 def _find_correlation(args):
 
@@ -41,7 +40,7 @@ def _find_correlation(args):
 
     n_dimers = find_kasteleyn_number(monomer_lattice, True)
 
-    return  distance_between, n_dimers, to_remove
+    return distance_between, n_dimers, to_remove
 
 
 def main(n_sites, lattice_index, check_n_monomers, n_cores, n_data_points):
@@ -49,17 +48,18 @@ def main(n_sites, lattice_index, check_n_monomers, n_cores, n_data_points):
     relevant_directory = f"monomer_results/reducible/{n_sites:05}"
     with open(f"{relevant_directory}.pkl", "rb") as f:
         try:
-            [pickle.load(f) for _ in range(lattice_index-1)]
+            _ = [pickle.load(f) for _ in range(lattice_index - 1)]
             lattice_original, dimer = pickle.load(f)
-        except EOFError:
-            raise Exception('not enough lattices xoxo')
-
+        except EOFError as exc:
+            raise Exception("not enough lattices xoxo")
 
     results = []
     for n in range(n_data_points):
-        f =  n / n_data_points
-        f = f*(2-f)
-        subset = np.random.choice(dimer, np.round(f*len(dimer)).astype(int) , replace=False)
+        f = n / n_data_points
+        f = f * (2 - f)
+        subset = np.random.choice(
+            dimer, np.round(f * len(dimer)).astype(int), replace=False
+        )
         lattice = expand_edges(lattice_original, subset)
 
         # find the sites to remove at random for monomer calculation
@@ -111,19 +111,18 @@ def main(n_sites, lattice_index, check_n_monomers, n_cores, n_data_points):
                 "pairs": pairs,
                 "mags": mags,
                 "powers": pows,
-                "dimer_probs": dimer_probs
+                "dimer_probs": dimer_probs,
             }
         )
 
-
-
-    with open(f"monomer_results/reducible/res/{n_sites:05}_{lattice_index}_res.pkl", "wb") as f:
+    with open(
+        f"monomer_results/reducible/res/{n_sites:05}_{lattice_index}_res.pkl", "wb"
+    ) as f:
         pickle.dump(results, f)
 
-    
 
 if __name__ == "__main__":
- 
+
     # n_sites = 400
     lattice_index = 2
     n_cores = 10
@@ -131,9 +130,10 @@ if __name__ == "__main__":
     pairs_to_check = 3000
 
     for n_sites in [2000]:
-        print(f"Starting calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}")
-        main(n_sites, lattice_index, pairs_to_check, n_cores,n_data_points)
-        print(f"Finished calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}")
-
-
-
+        print(
+            f"Starting calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}"
+        )
+        main(n_sites, lattice_index, pairs_to_check, n_cores, n_data_points)
+        print(
+            f"Finished calculations for {n_sites} sites, lattice index {lattice_index} at {datetime.datetime.now()}"
+        )
