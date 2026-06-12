@@ -6,7 +6,7 @@ import numpy.typing as npt
 from pfapack.ctypes import pfaffian
 import pfapack.ctypes as cpf
 from scipy import linalg as la
-
+import mpmath
 
 def kasteleyn_matrix(lattice: Lattice, ujk: npt.NDArray, k=None):
 
@@ -44,6 +44,11 @@ def _fast_pfaffian(K):
     method_bytes = "P".encode()
     skpf10_d(K.shape[0], matrix_f, result_array, uplo_bytes, method_bytes)
     return (result_array[0], result_array[1])
+
+def fast_pfaffian_as_mpmath(K):
+    m, e = _fast_pfaffian(K)
+    return mpmath.mpf(f"{m}e{int(e)}")
+
 
 
 def find_kasteleyn_number(lattice: Lattice, s_log=False, return_individual_sectors=False):
