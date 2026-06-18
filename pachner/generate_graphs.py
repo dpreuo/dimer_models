@@ -94,7 +94,7 @@ def main(params: Parameters):
 
             if rng.random() < p:
                 new_lattice = move(lattice, *candidate)
-                new_lattice = gu.toric_tutte_embedding(
+                new_lattice = gu.tutte_embedding(
                     new_lattice
                 )  # relax the lattice to ensure all convex
 
