@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dimer_models"
+version = "0.0.0"
+description = "Dimers and Bipartite Lattices"
+readme = { text = "", content-type = "text/plain" }
+authors = [
+    { name = "Peru D'Ornellas", email = "peru.dornellas@gmail.com" }
+]
+license = { text = "Apache Software License" }
+
+requires-python = ">=3.12"
+
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "mpire>=2.6",
+    "koala"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov",
+    "pytest-xdist",
+    "ruff"
+]
+
+science = [
+    "jupyter",
+    "ipython",
+    "pandas",
+    "sympy"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
