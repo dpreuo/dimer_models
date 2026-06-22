@@ -1,28 +1,16 @@
-from attr import dataclass
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 import copy
-from sympy import true
-from tqdm import trange
+import pickle
 from dataclasses import dataclass, field
 
+import numpy as np
+from koala import graph_utils as gu
 from pachner_metropolis_functions import (
-    lattice_squenergy,
     boltzmann_probability,
     choose_flip,
+    lattice_squenergy,
     n_squares,
 )
-
-from koala.pointsets import uniform
-from koala.voronization import generate_lattice
-from koala import graph_utils as gu
-from koala import plotting as pl
-from koala.lattice import Lattice, INVALID
-from koala import example_graphs as eg
-from koala import pachner_moves
-
-import pickle
+from tqdm import trange
 
 from dimer_models.lattice_generation import bipartite_squarefull
 
@@ -37,26 +25,18 @@ class Parameters:
     f_range: int = 10
     only_check_squares: bool = True
     rng: np.random.Generator = field(default_factory=np.random.default_rng)
-    output_location: str = "pachner/"
-
+    output_location: str = "pachner/lattices/"
 
     @property
     def attempt_limit(self):
-        return self.k_steps*5
-    
+        return self.k_steps * 5
+
     @property
     def output_file_name(self):
-        h = hash((
-            self.n_sites,
-            self.k_steps,
-            self.beta_range,
-            self.f_range,
-            self.only_check_squares
-        ))
+        h = hash(
+            (self.n_sites, self.k_steps, self.beta_range, self.f_range, self.only_check_squares)
+        )
         return f"pachner_lattices_{self.n_sites}_{str(abs(h))[:4]}"
-        
-
-
 
 
 def main(params: Parameters):
@@ -82,10 +62,9 @@ def main(params: Parameters):
 
         no_options = True
 
-        for attempt in range(params.attempt_limit):
-
+        for _ in range(params.attempt_limit):
             # propose a flip move
-            cand, change_energy, move, flip_type = choose_flip(n_each_flip, f_range = params.f_range)
+            cand, change_energy, move, flip_type = choose_flip(n_each_flip, f_range=params.f_range)
             candidate = cand(lattice)
 
             # check energy
@@ -101,13 +80,12 @@ def main(params: Parameters):
                 # check if the new lattice is broken
                 not_broken = new_lattice.n_plaquettes == new_lattice.n_vertices // 2
                 if not_broken:
-                    no_options = False 
+                    no_options = False
                     break
-
 
         energy = lattice_squenergy(new_lattice)
         n_squares_new = n_squares(new_lattice)
-        tr.set_description(f"Proportion: {n_squares_new/new_lattice.n_plaquettes:.3f}")
+        tr.set_description(f"Proportion: {n_squares_new / new_lattice.n_plaquettes:.3f}")
 
         lattice = new_lattice
         n_each_flip[flip_type] += 1
@@ -115,7 +93,6 @@ def main(params: Parameters):
         all_lattices.append(new_lattice.__getstate__())
         total_plaqs.append(new_lattice.n_plaquettes)
         n_squares_list.append(n_squares_new)
-
 
         if no_options:
             print("No valid moves found, stopping.")
@@ -140,8 +117,8 @@ def main(params: Parameters):
 
 if __name__ == "__main__":
     params = Parameters(
-        n_sites = 2000,
-        k_steps = 5000,
-        beta_range = (1, 10),
+        n_sites=300,
+        k_steps=500,
+        beta_range=(1, 10),
     )
     main(params)

@@ -1,24 +1,30 @@
-import numpy as np
-from koala.lattice import Lattice
-from koala import pachner_moves
 from functools import partial
 
+import numpy as np
+from koala import pachner_moves
+from koala.lattice import Lattice
+
+
 def squenergy_function(list_of_sides: np.ndarray):
-    distance_from_hex = np.abs(list_of_sides - 6)/2
+    distance_from_hex = np.abs(list_of_sides - 6) / 2
     return np.sum(distance_from_hex**2)
+
 
 def lattice_squenergy(lattice):
     """Returns the number of squares in the lattice"""
     sides = np.array([p.n_sides for p in lattice.plaquettes])
     return squenergy_function(sides)
 
+
 def n_squares(lattice):
     """Returns the number of squares in the lattice"""
     sides = np.array([p.n_sides for p in lattice.plaquettes])
     return np.sum(sides == 4)
 
+
 def plus_change_squenergy(lattice: Lattice, plaquette: int, central_vertex: int):
-    """Returns the change in the number of squares if we perform a plus move on the given plaquette and vertex"""
+    """Returns the change in the number of squares if we perform a plus move on the given plaquette
+    and vertex"""
 
     plaq = lattice.plaquettes[plaquette]
     assert plaq.n_sides > 4, "You cant contract a square"
@@ -28,10 +34,7 @@ def plus_change_squenergy(lattice: Lattice, plaquette: int, central_vertex: int)
     edges_around = plaq.edges[np.arange(_ - 2, _ + 2) % plaq.n_sides]
 
     plaqs_to_check = np.array(
-        [
-            lattice.edges.adjacent_plaquettes[a]
-            for a in [edges_around[0], edges_around[3]]
-        ]
+        [lattice.edges.adjacent_plaquettes[a] for a in [edges_around[0], edges_around[3]]]
     ).flatten()
 
     p, c = np.unique(plaqs_to_check, return_counts=True)
@@ -40,7 +43,6 @@ def plus_change_squenergy(lattice: Lattice, plaquette: int, central_vertex: int)
     new_sides = sides_relevant + 2
     new_sides[np.where(c == 2)] -= 4
     new_sides = np.append(new_sides, 4)  # the new plaquette created has 4 sides
-
 
     n_squares_before = squenergy_function(sides_relevant)
     n_squares_after = squenergy_function(new_sides)
@@ -67,9 +69,12 @@ def minus_change_squenergy(lattice: Lattice, edge: int):
     return int(n_squares_after - n_squares_before)
 
 
-def find_plus_candidate(lattice: Lattice, rng=np.random.default_rng()):
-    """Finds a random candidate for a plus move, 
-    i.e. a plaquette with more than 4 sides and a vertex on it such that at most one of the adjacent plaquettes is a square"""
+def find_plus_candidate(lattice: Lattice, rng=None):
+    """Finds a random candidate for a plus move,
+    i.e. a plaquette with more than 4 sides and a vertex on it such that at most one of the adjacent
+    plaquettes is a square"""
+
+    rng = np.random.default_rng() if rng is None else rng
 
     candidate = None
     while candidate is None:
@@ -86,9 +91,12 @@ def find_plus_candidate(lattice: Lattice, rng=np.random.default_rng()):
     return (plaq, vertex)
 
 
-def find_minus_candidate(lattice: Lattice, rng=np.random.default_rng(), only_check_squares = True):
-    """Finds a random candidate for a minus move, 
-    i.e. an edge such that the two plaquettes adjacent to it are not squares and at most one of the other adjacent plaquettes is a square"""
+def find_minus_candidate(lattice: Lattice, rng=None, only_check_squares=True):
+    """Finds a random candidate for a minus move,
+    i.e. an edge such that the two plaquettes adjacent to it are not squares and at most one of the
+    other adjacent plaquettes is a square"""
+
+    rng = np.random.default_rng() if rng is None else rng
 
     candidate = None
     while candidate is None:
@@ -110,12 +118,14 @@ def find_minus_candidate(lattice: Lattice, rng=np.random.default_rng(), only_che
 
 
 def boltzmann_probability(delta_energy, beta):
-    """Returns the Boltzmann probability of accepting a move with energy change delta_energy at inverse temperature beta"""
+    """Returns the Boltzmann probability of accepting a move with energy change delta_energy at
+    inverse temperature beta"""
     return np.exp(-delta_energy * beta)
 
 
-def choose_flip(n_each_flip, f_range=10, only_check_squares = True):
-    """Given the number of times each flip has been performed, returns a candidate for the next flip, with a bias towards the less performed one."""
+def choose_flip(n_each_flip, f_range=10, only_check_squares=True):
+    """Given the number of times each flip has been performed, returns a candidate for the next
+    flip, with a bias towards the less performed one."""
     diff = (n_each_flip["plus"] - n_each_flip["minus"]) / f_range + 0.5
     p = np.random.rand()
     if p > diff:
@@ -127,7 +137,7 @@ def choose_flip(n_each_flip, f_range=10, only_check_squares = True):
         )
     else:
         return (
-            partial(find_minus_candidate,only_check_squares = only_check_squares),
+            partial(find_minus_candidate, only_check_squares=only_check_squares),
             minus_change_squenergy,
             pachner_moves.bipartite_1_minus,
             "minus",

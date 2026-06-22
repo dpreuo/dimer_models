@@ -52,19 +52,35 @@ def fast_pfaffian_as_mpmath(K):
     return mpmath.mpf(f"{m}e{int(e)}")
 
 
-def generate_kasteleyn_orientation(lattice: Lattice):
+def generate_kasteleyn_orientation(lattice: Lattice, defects=None, initial_ujk=None):
     """Make a valid Kasteleyn orientation and check it works
 
     Args:
         lattice (Lattice): The lattice
+        defects(np.ndarray | None): The plaquettes to put defects in
 
     Returns:
-        np.ndarray: A 1d array of kateleyn orientations
+        np.ndarray: A 1d array of kasteleyn orientations
     """
+    target_fluxes = np.array([-1] * lattice.n_plaquettes)
 
-    ujk = ujk_from_fluxes(lattice, np.array([-1] * lattice.n_plaquettes))
-    assert np.all(fluxes_from_ujk(lattice, ujk) == -1)
+    if defects is not None:
+        for x in defects:
+            target_fluxes[x] *= -1
+
+    ujk = ujk_from_fluxes(lattice, target_fluxes, initial_ujk)
+    assert np.all(fluxes_from_ujk(lattice, ujk) == target_fluxes)
     return ujk
+
+
+################################################
+############### Disc algorithms ###############
+################################################
+
+
+################################################
+############### Torus algorithms ###############
+################################################
 
 
 def generate_torus_orientations(lattice: Lattice, initial_ujk: np.ndarray = None):
@@ -118,42 +134,31 @@ def find_omega(pfaffian_vals: np.ndarray):
     return omega
 
 
-def torus_kasteleyn_number(lattice: Lattice):
-    """Method for finding the number of dimerisations for a system in PBC
-
-    Args:
-        lattice (Lattice): The lattice
-
-    Returns:
-        mpmath.ctx_mp_python.mpf: The number of dimerisations
-    """
-    orientations = generate_torus_orientations(lattice)
-    kasteleyn_matrices = np.array([kasteleyn_matrix(lattice, o) for o in orientations])
+def torus_kasteleyn_number(kasteleyn_matrices):
     pfaffians = np.array([fast_pfaffian_as_mpmath(k) for k in kasteleyn_matrices])
     omega = find_omega(pfaffians)
-    n_dimerisations_pfaff = mpmath.nint(abs(sum(omega * pfaffians) / 2))
-    return n_dimerisations_pfaff
+    return mpmath.nint(abs(sum(omega * pfaffians) / 2))
 
 
-def disc_kasteleyn_number(lattice: Lattice):
-    """Method for finding the number of dimerisations for a system in OBC
+def torus_dimer_probabilities(
+    lattice: Lattice,
+    kasteleyn_matrices: np.ndarray,
+    kasteleyn_inverses: np.ndarray,
+    kasteleyn_pfaffians: np.ndarray,
+    omega: np.ndarray,
+):
 
-    Args:
-        lattice (Lattice): The lattice
-
-    Returns:
-        mpmath.ctx_mp_python.mpf: The number of dimerisations
-    """
-    orientation = generate_kasteleyn_orientation(lattice)
-    k_matrix = kasteleyn_matrix(lattice, orientation)
-    pf = fast_pfaffian_as_mpmath(k_matrix)
-    return pf
+    ncases = (omega * kasteleyn_pfaffians)[:, None, None] * kasteleyn_inverses * kasteleyn_matrices
+    inverse_numerator = np.sum(ncases, axis=0)
+    inverse_denominator = np.sum(omega * kasteleyn_pfaffians)
+    probs_k = (inverse_numerator / inverse_denominator)[*lattice.edges.indices.T]
+    return np.abs(probs_k).astype(float)
 
 
 # TODO - write the disc version of this function
 def torus_dimer_correlation(
     lattice: Lattice,
-    kasteleyn_matrices: list,
+    kasteleyn_matrices: np.ndarray,
     kasteleyn_inverses: np.ndarray,
     kasteleyn_pfaffians: np.ndarray,
     omega: np.ndarray,
@@ -171,7 +176,45 @@ def torus_dimer_correlation(
     return probability
 
 
+def torus_monomer_count(
+    kasteleyn_tilde_matrices: np.ndarray,
+    inverses_tilde: np.ndarray,
+    pfaffians_tilde: np.ndarray,
+    chosen_vertices: np.ndarray,
+):
+    inverses_tilde_restricted = inverses_tilde[:, *np.ix_(chosen_vertices, chosen_vertices)]
+    inverses_tilde_pfaffs = np.array(
+        [fast_pfaffian_as_mpmath(k) for k in inverses_tilde_restricted]
+    )
+    omega_tilde = find_omega(inverses_tilde_pfaffs * pfaffians_tilde)
+    monomer_numerator = omega_tilde * inverses_tilde_pfaffs * pfaffians_tilde
+    n_monomers_pfaff = mpmath.nint(mpmath.fabs(sum(monomer_numerator) / 2))
+
+    # this doesnt work if one pfaffian vanishes and we have to find the full reduced matrix
+    if np.any(pfaffians_tilde < 1e-10) and n_monomers_pfaff != 0:
+        n = kasteleyn_tilde_matrices.shape[1]
+        mask = np.delete(np.arange(n), chosen_vertices)
+        kasteleyn_reduced = kasteleyn_tilde_matrices[:, *np.ix_(mask, mask)]
+        n_monomers_pfaff = torus_kasteleyn_number(kasteleyn_reduced)
+
+    return n_monomers_pfaff
+
+
+# TODO - the sign of thsi doesnt always agree with brute force -- is this a problem?
+def torus_vison_correlation(
+    pfaffians_tilde: np.ndarray,
+    omega: np.ndarray,
+):
+    vison_numerator = omega * pfaffians_tilde
+    n_vison_pfaff = mpmath.nint(sum(vison_numerator) / 2)
+    return abs(n_vison_pfaff)
+
+
+##################################################
 ##############  frontend functions  ##############
+##################################################
+
+
 def find_kasteleyn_number(lattice: Lattice):
     """Given a lattice, find the total number of dimerisations using Kasteleyn's method.
 
@@ -188,8 +231,12 @@ def find_kasteleyn_number(lattice: Lattice):
 
     # check boundaries
     if np.all(lattice.boundary_conditions):
-        return torus_kasteleyn_number(lattice)
+        orientations = generate_torus_orientations(lattice)
+        kasteleyn_matrices = np.array([kasteleyn_matrix(lattice, o) for o in orientations])
+        return torus_kasteleyn_number(kasteleyn_matrices)
     elif np.all(~lattice.boundary_conditions):
-        return disc_kasteleyn_number(lattice)
+        orientation = generate_kasteleyn_orientation(lattice)
+        k_matrix = kasteleyn_matrix(lattice, orientation)
+        return fast_pfaffian_as_mpmath(k_matrix)
     else:
         raise ValueError("Only wotks if the latttice is in full PBC or OBC")
