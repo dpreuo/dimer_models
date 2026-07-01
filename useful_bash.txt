@@ -1,0 +1,3 @@
+seff 5989092
+squeue -u $USER
+sbatch 

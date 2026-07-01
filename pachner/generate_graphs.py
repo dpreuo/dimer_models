@@ -36,7 +36,7 @@ class Parameters:
         h = hash(
             (self.n_sites, self.k_steps, self.beta_range, self.f_range, self.only_check_squares)
         )
-        return f"pachner_lattices_{self.n_sites}_{str(abs(h))[:4]}"
+        return f"{self.n_sites:04d}_{str(abs(h))[:4]}"
 
 
 def main(params: Parameters):
@@ -117,8 +117,8 @@ def main(params: Parameters):
 
 if __name__ == "__main__":
     params = Parameters(
-        n_sites=300,
-        k_steps=500,
+        n_sites=100,
+        k_steps=200,
         beta_range=(1, 10),
     )
     main(params)

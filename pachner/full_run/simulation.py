@@ -112,7 +112,14 @@ def solve_lattice_data(
     visons = np.zeros(len(plaquette_list))
     monomers = {}
     # visons and monomers
+
+    next_mark = 10
     for n, p in enumerate(plaquette_list):
+        percent = 100 * (n + 1) / len(plaquette_list)
+        if percent >= next_mark:
+            timer.mark(f"{next_mark}% complete")
+            next_mark += 10
+
         kasteleyn_tilde_matrices, pfaffians_tilde, inverses_tilde = make_and_solve_kasteleyn_tilde(
             lattice, p, initial_ujk
         )

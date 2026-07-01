@@ -1,11 +1,19 @@
 import json
+import logging
 import os
 import pickle
+import sys
 
 import numpy as np
 from config import Parameters
 from koala.lattice import Lattice
 from simulation import solve_lattice_data
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+)
 
 
 def choose_lattices(lattice_data, n_lattices):
@@ -20,7 +28,7 @@ def choose_lattices(lattice_data, n_lattices):
 def main(task_id):
 
     # load the configurations
-    with open("pachner/full_run/run_config.json") as f:
+    with open("/scratch/perudornellas/dimer_models/pachner/full_run/run_config.json") as f:
         data = json.load(f)
         params = Parameters(**data)
 
@@ -57,8 +65,7 @@ def main(task_id):
 
 
 if __name__ == "__main__":
-    job_id = os.environ.get("SLURM_JOB_ID")
-    task_id = os.environ.get("SLURM_ARRAY_TASK_ID")
-    task_id = 10
-
+    job_id = int(os.environ["SLURM_JOB_ID"])
+    task_id = int(os.environ["SLURM_ARRAY_TASK_ID"])
+    print(f"Job: {job_id}, task: {task_id}")
     main(task_id)

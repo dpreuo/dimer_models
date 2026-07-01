@@ -20,12 +20,3 @@ class Parameters:
         directory = os.path.join(self.results_directory, self.job_name)
         os.makedirs(directory, exist_ok=True)
         return os.path.join(directory, f"{task_id:03d}.pkl")
-
-
-directory_name = "my_directory"
-
-if not os.path.isdir(directory_name):
-    os.makedirs(directory_name, exist_ok=True)
-    print(f"Created directory: {directory_name}")
-else:
-    print(f"Directory already exists: {directory_name}")
