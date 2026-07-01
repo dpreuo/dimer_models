@@ -1,3 +1,8 @@
+.DS_Store
+*.pkl
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -448,7 +453,6 @@ TSWLatexianTemp*
 # xwatermark package
 *.xwm
 
-.DS_Store
 
 # REVTeX puts footnotes in the bibliography by default, unless the nofootinbib
 # option is specified. Footnotes are the stored in a file with suffix Notes.bib.
