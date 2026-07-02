@@ -135,6 +135,15 @@ def find_omega(pfaffian_vals: np.ndarray):
 
 
 def torus_kasteleyn_number(kasteleyn_matrices):
+    """Given a set of four Kasteleyn matrices for each global flux sector, comput the numebr of
+    dimerisations of the graph
+
+    Args:
+        kasteleyn_matrices (np.ndarray): A kasteleyn matrix for each of the four sectors
+
+    Returns:
+        mpmath.ctx_mp_python.mpf : The number of dimerisations
+    """
     pfaffians = np.array([fast_pfaffian_as_mpmath(k) for k in kasteleyn_matrices])
     omega = find_omega(pfaffians)
     return mpmath.nint(abs(sum(omega * pfaffians) / 2))
@@ -147,7 +156,21 @@ def torus_dimer_probabilities(
     kasteleyn_pfaffians: np.ndarray,
     omega: np.ndarray,
 ):
+    """Given a set of four Kasteleyn matrices, their inverses, and their pfaffians, compute the
+    probability of each edge being occupied by a dimer
 
+    Args:
+        lattice (Lattice): The lattice object
+        kasteleyn_matrices (np.ndarray): The four Kasteleyn matrices for each global flux sector
+        kasteleyn_inverses (np.ndarray): The four inverses of the Kasteleyn matrices for each
+            global flux sector
+        kasteleyn_pfaffians (np.ndarray): The four pfaffians of the Kasteleyn matrices for each
+            global flux sector
+        omega (np.ndarray): The omega vector that maximises the weighted sum of the pfaffians
+
+    Returns:
+        np.ndarray: The probability of each edge being occupied by a dimer
+    """
     ncases = (omega * kasteleyn_pfaffians)[:, None, None] * kasteleyn_inverses * kasteleyn_matrices
     inverse_numerator = np.sum(ncases, axis=0)
     inverse_denominator = np.sum(omega * kasteleyn_pfaffians)
@@ -164,7 +187,23 @@ def torus_dimer_correlation(
     omega: np.ndarray,
     edges_for_corr: np.ndarray,
 ):
+    """Given a set of four Kasteleyn matrices, their inverses, and their pfaffians, compute the
+    probability of a set of edges being simultaneously occupied by dimers
 
+    Args:
+        lattice (Lattice): The lattice object
+        kasteleyn_matrices (np.ndarray): The four Kasteleyn matrices for each global flux sector
+        kasteleyn_inverses (np.ndarray): The four inverses of the Kasteleyn matrices for each
+            global flux sector
+        kasteleyn_pfaffians (np.ndarray): The four pfaffians of the Kasteleyn matrices for each
+            global flux sector
+        omega (np.ndarray): The omega vector that maximises the weighted sum of the pfaffians
+        edges_for_corr (np.ndarray): The edges to compute the correlation for
+
+    Returns:
+        float: The probability of the edges being simultaneously occupied by dimers
+
+    """
     verts = lattice.edges.indices[edges_for_corr]
     kasteleyn_products = np.prod(kasteleyn_matrices[:, *verts.T], axis=1)
     slice = np.ix_(verts.flatten(), verts.flatten())
@@ -182,6 +221,22 @@ def torus_monomer_count(
     pfaffians_tilde: np.ndarray,
     chosen_vertices: np.ndarray,
 ):
+    """Given a set of four Kasteleyn matrices, their inverses, and their pfaffians, compute the
+    number of dimerisations with monomers at the chosen vertices
+
+    Args:
+        kasteleyn_tilde_matrices (np.ndarray): The four Kasteleyn matrices for each
+            global flux sector
+        inverses_tilde (np.ndarray): The four inverses of the Kasteleyn matrices for each
+            global flux sector
+        pfaffians_tilde (np.ndarray): The four pfaffians of the Kasteleyn matrices for each
+            global flux sector
+        chosen_vertices (np.ndarray): The vertices to compute the monomer count for
+
+    Returns:
+        mpmath.ctx_mp_python.mpf : The number of dimerisations with monomers at the chosen vertices
+    """
+
     inverses_tilde_restricted = inverses_tilde[:, *np.ix_(chosen_vertices, chosen_vertices)]
     inverses_tilde_pfaffs = np.array(
         [fast_pfaffian_as_mpmath(k) for k in inverses_tilde_restricted]
@@ -200,11 +255,23 @@ def torus_monomer_count(
     return n_monomers_pfaff
 
 
-# TODO - the sign of thsi doesnt always agree with brute force -- is this a problem?
+# TODO - the sign of this doesnt always agree with brute force -- is this a problem?
 def torus_vison_correlation(
     pfaffians_tilde: np.ndarray,
     omega: np.ndarray,
 ):
+    """Given a set of four Kasteleyn matrices, their inverses, and their pfaffians, compute the
+    weighted sum over dimerisations with visons at the chosen plaquettes
+
+    Args:
+        pfaffians_tilde (np.ndarray): The four pfaffians of the Kasteleyn matrices for each
+            global flux sector
+        omega (np.ndarray): The omega vector that maximises the weighted sum of the pfaffians
+
+    Returns:
+        mpmath.ctx_mp_python.mpf : The number of dimerisations with visons
+    """
+
     vison_numerator = omega * pfaffians_tilde
     n_vison_pfaff = mpmath.nint(sum(vison_numerator) / 2)
     return abs(n_vison_pfaff)
@@ -239,4 +306,4 @@ def find_kasteleyn_number(lattice: Lattice):
         k_matrix = kasteleyn_matrix(lattice, orientation)
         return fast_pfaffian_as_mpmath(k_matrix)
     else:
-        raise ValueError("Only wotks if the latttice is in full PBC or OBC")
+        raise ValueError("Only works if the latttice is in full PBC or OBC")
